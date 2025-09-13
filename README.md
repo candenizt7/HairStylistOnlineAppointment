@@ -4,6 +4,29 @@ An ASP.NET Core MVC project developed as a portfolio piece.
 Allows customers to book, view, and cancel appointments online.  
 Admins can manage services and appointments.
 
+## 📸 Screenshots
+
+### 🏠 Home Page
+![Home Page](docs/screenshots/home.png)
+
+### 🔑 Login Page
+![Login Page](docs/screenshots/login.png)
+
+### 📝 Register Page
+![Register Page](docs/screenshots/register.png)
+
+### 📅 Book Appointment
+![Book Appointment](docs/screenshots/book1.png)
+![Book Appointment](docs/screenshots/book2.png)
+
+### 📖 My Appointments
+![My Appointments](docs/screenshots/appointments.png)
+
+### ⚙️ Admin Dashboard
+![Admin Dashboard](docs/screenshots/edit1.png)
+![Admin Dashboard](docs/screenshots/edit2.png)
+
+
 ## Features
 - User authentication (ASP.NET Identity)
 - Book / cancel appointments
