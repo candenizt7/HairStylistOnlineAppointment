@@ -53,6 +53,6 @@ Admins can manage services and appointments.
 - Password: set during seeding
 
 - ## 👨‍💻 Author
-Developed by **Candeniz Topal**  
-📧 Contact: cande.topal61@gmail.com
-Linkedin: https://www.linkedin.com/in/candeniz-topal-021957373/
+- Developed by **Candeniz Topal**  
+- 📧 Contact: cande.topal61@gmail.com
+- Linkedin: https://www.linkedin.com/in/candeniz-topal-021957373/
