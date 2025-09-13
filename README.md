@@ -55,4 +55,4 @@ Admins can manage services and appointments.
 - ## 👨‍💻 Author
 - Developed by **Candeniz Topal**  
 - 📧 Contact: cande.topal61@gmail.com
-- Linkedin: https://www.linkedin.com/in/candeniz-topal-021957373/
+- Linkedin: https://www.linkedin.com/in/candeniz-topal-021957373
