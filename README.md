@@ -23,6 +23,7 @@ Admins can manage services and appointments.
 ![My Appointments](docs/screenshots/appointments.png)
 
 ### ⚙️ Admin Dashboard
+![Admin Dashboard](docs/screenshots/admin3.png)
 ![Admin Dashboard](docs/screenshots/edit1.png)
 ![Admin Dashboard](docs/screenshots/edit2.png)
 
