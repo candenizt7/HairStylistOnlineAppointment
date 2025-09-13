@@ -1,0 +1,218 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Text.Json
+@model AppointmentCreateVM
+
+@{
+    ViewData["Title"] = "Randevu Al";
+    var services = (IEnumerable<OnlineAppointment.Models.Service>)ViewBag.Services ?? Enumerable.Empty<OnlineAppointment.Models.Service>();
+    // JS içinde kullanmak için sade bir obje hazırlayalım:
+    var servicesJson = JsonSerializer.Serialize(
+        services.Select(s => new { id = s.Id, name = s.Name, duration = s.DurationMinutes, price = s.Price })
+    );
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-8">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-gradient text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-calendar-plus me-2"></i>Hair Stylist • Book an Appointment</h4>
+                        <small class="opacity-75">Logged in: <strong>@User.Identity?.Name</strong></small>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Canlı Özet Paneli -->
+                    <div id="summary" class="alert alert-light border mb-4">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6">
+                                <div class="small text-muted">Selected Service</div>
+                                <div id="sum-service" class="fw-semibold">—</div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="small text-muted">Duration</div>
+                                <div id="sum-duration" class="fw-semibold">—</div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="small text-muted">Price</div>
+                                <div id="sum-price" class="fw-semibold">—</div>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="small text-muted">Estimated Completion</div>
+                                <div id="sum-end" class="fw-semibold">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="mb-2"><i class="bi bi-calendar3"></i> Availability</h5>
+                        <div id="calendar" class="border rounded-3 p-2"></div>
+                        <div class="form-text">
+                            Click on a free slot to pick your start time. Business hours: 09:00–20:00.
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form asp-area="" asp-controller="Appointments" asp-action="Create" method="post" id="appointment-form" novalidate>
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label asp-for="ServiceId" class="form-label">Service</label>
+                            <select asp-for="ServiceId" class="form-select" asp-items="ViewBag.ServiceList" required>
+                                <option value="" disabled selected="@(Model.ServiceId == 0)">-- Select --</option>
+                            </select>
+                            <span asp-validation-for="ServiceId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Start" class="form-label">Start (Date & Time)</label>
+                            <input asp-for="Start"
+                                   type="datetime-local"
+                                   class="form-control @(ViewData.ModelState[nameof(Model.Start)]?.Errors.Any() == true ? "is-invalid" : "")" />
+                            <span asp-validation-for="Start" class="text-danger"></span>
+                            <div class="form-text">You enter it according to your browser time; UTC is stored in the database.</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">Save Appointment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a class="btn btn-outline-secondary" asp-controller="Appointments" asp-action="Index">My Appointments</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- FullCalendar (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+    <script>
+        (function () {
+          const form = document.getElementById('appointment-form');
+          if (!form) return;
+
+          // ---------- Canlı özet için servis verisi ----------
+          const services = @Html.Raw(servicesJson);
+          const sel = form.querySelector('[name="ServiceId"]');
+          const dt  = form.querySelector('[name="Start"]');
+
+          function getSelectedService() {
+            const id = Number(sel.value || 0);
+            return services.find(x => x.id === id);
+          }
+
+          // ---------- FullCalendar ----------
+          const calendarEl = document.getElementById('calendar');
+          const cal = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',       // 'timeGridDay' de kullanabilirsin
+            slotMinTime: '09:00:00',           // çalışma saatleri
+            slotMaxTime: '20:00:00',
+            allDaySlot: false,
+            nowIndicator: true,
+            selectable: true,                  // boş slot seçimi
+            selectMirror: true,
+            height: 'auto',
+            expandRows: true,
+            firstDay: 1,                       // Pazartesi
+
+            // Geçmiş günlere navigasyonu kapat
+            validRange: function(nowDate) {
+              return { start: nowDate };       // dünden önceye gidilemez
+            },
+
+            // Bugünün içinde geçmiş saat aralığını seçtirme
+            selectAllow: function(selectInfo) {
+              const now = new Date();
+              return selectInfo.start >= now;  // seçim başlangıcı şimdi ve sonrası olmalı
+            },
+
+            // Dolu randevuları yükle (Busy endpoint)
+            events: function(info, successCallback, failureCallback) {
+              const url = '@Url.Action("Busy", "Appointments")';
+              const params = new URLSearchParams({
+                start: info.startStr,   // ISO
+                end: info.endStr
+              });
+              fetch(url + '?' + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+              })
+              .then(r => r.json())
+              .then(data => successCallback(data))
+              .catch(err => failureCallback(err));
+            },
+
+            // Takvimde bir boş slot seçilince form alanını doldur
+            select: function(selectionInfo) {
+              const svc = getSelectedService();
+              if (!svc) {
+                alert('Please select a service first.');
+                cal.unselect();
+                return;
+              }
+              const start = new Date(selectionInfo.start);
+              const yyyy = start.getFullYear();
+              const mm   = String(start.getMonth()+1).padStart(2,'0');
+              const dd   = String(start.getDate()).padStart(2,'0');
+              const hh   = String(start.getHours()).padStart(2,'0');
+              const mi   = String(start.getMinutes()).padStart(2,'0');
+              dt.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+              // Sunucu end time'ı servisin süresine göre hesaplayacak.
+            },
+
+            // Mevcut randevuları tıklamayı pasifleştir
+            eventClick: function(info) {
+              info.jsEvent.preventDefault();
+            }
+          });
+
+          cal.render();
+
+          // ---------- Canlı özet ----------
+          const elName  = document.getElementById('sum-service');
+          const elDur   = document.getElementById('sum-duration');
+          const elPrice = document.getElementById('sum-price');
+          const elEnd   = document.getElementById('sum-end');
+
+          function formatPrice(v) {
+            try {
+              return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+            } catch { return v; }
+          }
+
+          function calcEnd(startStr, durationMin) {
+            if (!startStr || !durationMin) return '—';
+            const d = new Date(startStr);
+            if (Number.isNaN(d.getTime())) return '—';
+            d.setMinutes(d.getMinutes() + Number(durationMin));
+            return d.toLocaleString();
+          }
+
+          function updateSummary() {
+            const svc = getSelectedService();
+            if (!svc) {
+              elName.textContent  = '—';
+              elDur.textContent   = '—';
+              elPrice.textContent = '—';
+              elEnd.textContent   = '—';
+              return;
+            }
+            elName.textContent  = svc.name;
+            elDur.textContent   = svc.duration + ' min';
+            elPrice.textContent = formatPrice(svc.price);
+            elEnd.textContent   = calcEnd(dt.value, svc.duration);
+          }
+
+          sel?.addEventListener('change', updateSummary);
+          dt?.addEventListener('change', updateSummary);
+          updateSummary();
+        })();
+    </script>
+}
+

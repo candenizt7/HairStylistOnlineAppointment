@@ -1,0 +1,33 @@
+﻿@model OnlineAppointment.Models.Appointment
+
+<div class="alert alert-success" role="alert">
+    <strong>Your appointment has been made!</strong> Details are below.
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Service</span>
+                <strong>@Model.Service?.Name</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Start</span>
+                <strong>@Model.Start.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>End</span>
+                <strong>@Model.End.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Status</span>
+                <span class="badge bg-info">@Model.Status</span>
+            </li>
+        </ul>
+
+        <div class="mt-3 d-flex gap-2 justify-content-end">
+            <a class="btn btn-primary" asp-controller="Appointments" asp-action="Index">My Appointments</a>
+            <a class="btn btn-outline-secondary" asp-controller="Appointments" asp-action="Create">New Appointments</a>
+        </div>
+    </div>
+</div>

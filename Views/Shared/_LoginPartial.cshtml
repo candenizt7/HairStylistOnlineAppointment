@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using OnlineAppointment.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item d-flex align-items-center me-2">
+        <span class="badge bg-primary text-white px-3 py-2">
+            <i class="bi bi-person-circle me-1"></i> @User.Identity?.Name
+        </span>
+    </li>
+    <li class="nav-item">
+        <form class="d-inline" asp-area="Identity" asp-page="/Account/Logout"
+              asp-route-returnUrl="@Url.Action("Index","Home")" method="post">
+            <button type="submit" class="nav-link btn btn-link">Sign out</button>
+        </form>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Sign in</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Sign up</a>
+    </li>
+}

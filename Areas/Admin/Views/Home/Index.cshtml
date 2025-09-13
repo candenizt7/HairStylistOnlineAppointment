@@ -1,0 +1,63 @@
+﻿@model AdminDashboardVM
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h2>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted">Services</div>
+                            <div class="display-6 fw-semibold">@Model.ServiceCount</div>
+                        </div>
+                        <i class="bi bi-scissors display-6"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted">Pending Appointments</div>
+                            <div class="display-6 fw-semibold">@Model.PendingCount</div>
+                        </div>
+                        <i class="bi bi-hourglass-split display-6"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted">Today</div>
+                            <div class="display-6 fw-semibold">@Model.TodayCount</div>
+                        </div>
+                        <i class="bi bi-calendar-day display-6"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-area="Admin" asp-controller="Services" asp-action="Index">
+            <i class="bi bi-gear me-1"></i> Manage Services
+        </a>
+        <a class="btn btn-outline-secondary" asp-area="Admin" asp-controller="Appointments" asp-action="Index">
+            <i class="bi bi-people me-1"></i> Manage Appointments
+        </a>
+    </div>
+</div>

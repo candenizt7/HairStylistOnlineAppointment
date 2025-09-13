@@ -1,0 +1,110 @@
+﻿@model IEnumerable<OnlineAppointment.Models.Appointment>
+@{
+    ViewData["Title"] = "Manage Appointments";
+    string filter = (ViewBag.Filter as string) ?? "Pending";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3"><i class="bi bi-people me-2"></i>Manage Appointments</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item">
+            <a class="nav-link @(filter == "Pending" ? "active" : "")"
+               asp-area="Admin" asp-controller="Appointments" asp-action="Index" asp-route-filter="Pending">Pending</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(filter == "Today" ? "active" : "")"
+               asp-area="Admin" asp-controller="Appointments" asp-action="Index" asp-route-filter="Today">Today</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(filter == "All" ? "active" : "")"
+               asp-area="Admin" asp-controller="Appointments" asp-action="Index" asp-route-filter="All">All</a>
+        </li>
+    </ul>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-5 text-center">No appointments found.</div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model)
+                    {
+                        var badgeClass = a.Status switch
+                        {
+                            OnlineAppointment.Models.AppointmentStatus.Pending => "bg-warning text-dark",
+                            OnlineAppointment.Models.AppointmentStatus.Confirmed => "bg-success",
+                            OnlineAppointment.Models.AppointmentStatus.Completed => "bg-secondary",
+                            OnlineAppointment.Models.AppointmentStatus.Cancelled => "bg-danger",
+                            _ => "bg-light text-dark"
+                        };
+
+                        <tr>
+                            <td class="fw-semibold">@a.Customer?.FullName</td>
+                            <td class="fw-semibold">@a.Service?.Name</td>
+                            <td>@a.Start.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@a.End.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td><span class="badge @badgeClass">@a.Status</span></td>
+                            <td class="text-end">
+                                <div class="btn-group">
+
+                                    @* Approve: sadece Pending *@
+                                    @if (a.Status == OnlineAppointment.Models.AppointmentStatus.Pending)
+                                    {
+                                        <form asp-area="Admin" asp-controller="Appointments" asp-action="Approve" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
+                                        </form>
+                                    }
+
+                                    @* Complete: sadece Confirmed *@
+                                    @if (a.Status == OnlineAppointment.Models.AppointmentStatus.Confirmed)
+                                    {
+                                        <form asp-area="Admin" asp-controller="Appointments" asp-action="Complete" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Complete</button>
+                                        </form>
+                                    }
+
+                                    @* Cancel: Completed hariç her durumda gösterilebilir *@
+                                    @if (a.Status != OnlineAppointment.Models.AppointmentStatus.Completed)
+                                    {
+                                        <form asp-area="Admin" asp-controller="Appointments" asp-action="Cancel" method="post" class="d-inline"
+                                              onsubmit="return confirm('Cancel this appointment?');">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                        </form>
+                                    }
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

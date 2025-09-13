@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "Unexpected error";
+}
+<div class="container mt-5">
+    <div class="alert alert-danger shadow-sm">
+        <h4 class="alert-heading">Something went wrong</h4>
+        <p class="mb-0">We’re sorry. Please try again or return to the <a asp-controller="Home" asp-action="Index">home page</a>.</p>
+        @* İstersen aşağıyı sadece Development'ta göster *@
+        @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            <hr />
+            <div class="small text-muted">Path: @ViewBag.Path</div>
+            <div class="small text-muted">Message: @ViewBag.Message</div>
+        }
+    </div>
+</div>

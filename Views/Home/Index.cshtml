@@ -1,0 +1,96 @@
+﻿@model OnlineAppointment.Controllers.HomeIndexViewModel
+@{
+    ViewData["Title"] = "Hair Stylist";
+}
+
+<!-- HERO -->
+<div>
+  <div class="container py-5">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-7">
+        <h1 class="display-5 fw-bold mb-3">Hair Design</h1>
+        <p class="lead text-muted mb-4">
+                    Professional hairdressing experience. Get service without waiting by making an online appointment.
+        </p>
+        <div class="d-flex gap-2">
+          <a class="btn btn-primary btn-lg" asp-controller="Appointments" asp-action="Create">
+                Make an Appointment
+          </a>
+          @if (User.Identity?.IsAuthenticated == true)
+          {
+            <a class="btn btn-outline-secondary btn-lg" asp-controller="Appointments" asp-action="Index">
+                            My Appointments
+            </a>
+          }
+          else
+          {
+            <a class="btn btn-outline-secondary btn-lg" asp-area="Identity" asp-page="/Account/Login">
+              Log in
+            </a>
+          }
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <!-- Basit konsept görsel alanı / placeholder -->
+                <div class="ratio ratio-16x9 rounded-3 shadow-sm position-relative"
+                      style="background:url('/images/hero-hair.jpg') center/cover no-repeat;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100"
+                         style="background: radial-gradient(transparent, rgba(0,0,0,.45)); border-radius: .75rem;"></div>
+                </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SON RANDEVU (Giriş yapmışsa) -->
+@if (User.Identity?.IsAuthenticated == true && Model.LastAppointment != null)
+{
+  <div class="container mt-4">
+    <div class="alert alert-light border-0 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+                    <div class="small text-muted">Your Last Appointment</div>
+          <div class="fw-semibold">@Model.LastAppointment.Service?.Name</div>
+          <div>@Model.LastAppointment.Start.ToLocalTime().ToString("dd.MM.yyyy HH:mm") – @Model.LastAppointment.End.ToLocalTime().ToString("HH:mm")</div>
+        </div>
+        <div>
+          <a class="btn btn-sm btn-outline-primary" asp-controller="Appointments" asp-action="Index">See All</a>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- HİZMETLER -->
+<div class="container my-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Featured Services</h3>
+        <a class="btn btn-outline-secondary btn-sm" asp-controller="Appointments" asp-action="Create">Go to Appointment</a>
+  </div>
+
+  @if (Model.Services == null || !Model.Services.Any())
+  {
+      <div class="alert alert-light border">Henüz hizmet eklenmemiş. Yönetici panelinden hizmet ekleyin.</div>
+  }
+  else
+  {
+    <div class="row g-3">
+      @foreach (var s in Model.Services)
+      {
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+              <h5 class="card-title mb-1">@s.Name</h5>
+              <div class="text-muted small mb-2">@s.DurationMinutes dk</div>
+              <div class="fw-semibold mb-3">
+                @s.Price.ToString("C", new System.Globalization.CultureInfo("tr-TR"))
+              </div>
+              <a class="btn btn-sm btn-primary" asp-controller="Appointments" asp-action="Create"
+                               asp-route-serviceId="@s.Id">Choose & Make an Appointment</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

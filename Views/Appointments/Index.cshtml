@@ -1,0 +1,78 @@
+﻿@model IEnumerable<OnlineAppointment.Models.Appointment>
+@{
+    ViewData["Title"] = "Randevularım";
+    var fullName = ViewBag.FullName as string;
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0<i class="bi bi-journal-text me-2"></i>
+            My Appointments
+            @if (!string.IsNullOrWhiteSpace(fullName))
+            {
+                <small class="text-muted">— @fullName</small>
+            }
+        </h3>
+        <a class="btn btn-primary" asp-action="Create">New Appointment</a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="mb-2">You don't have an appointment yet.</div>
+                <a class="btn btn-success" asp-action="Create">Make an appointment now</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Service</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Process</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model)
+                    {
+                        var badgeClass = a.Status switch
+                        {
+                            OnlineAppointment.Models.AppointmentStatus.Pending => "bg-warning text-dark",
+                            OnlineAppointment.Models.AppointmentStatus.Confirmed => "bg-success",
+                            OnlineAppointment.Models.AppointmentStatus.Completed => "bg-secondary",
+                            OnlineAppointment.Models.AppointmentStatus.Cancelled => "bg-danger",
+                            _ => "bg-light text-dark"
+                        };
+
+                        <tr>
+                            <td class="fw-semibold">@a.Service?.Name</td>
+                            <td>@a.Start.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@a.End.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td><span class="badge @badgeClass">@a.Status</span></td>
+                            <td class="text-end">
+                                @if (a.Status != OnlineAppointment.Models.AppointmentStatus.Cancelled
+                               && a.Status != OnlineAppointment.Models.AppointmentStatus.Completed)
+                                {
+                                    <form asp-action="Cancel" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@a.Id" />
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Are you sure you want to cancel this appointment?');">
+                                            İptal
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
